@@ -287,15 +287,19 @@ def EX_stage(ops,program_counter):
 	# if(opcode == "CMN"): //Not required
 	# 	Reg_File[op3]=Reg_File[op1] | Reg_File[op2]
 
-def init():
+def init(test):
    program_counter = 869
-   energy = random.randint(5*1048, 20*1048)
    for i in range (2**16):
       data_memory.append(0)
    PSR = {"C":0,"N":0,"V":0,"Z":0}
    Reg_File={"r0":0,"r1":0,"r2":0,"r3":0,"r4":0,"r5":0,"r6":0,"r7":0,"r8":0,"r9":0,"r10":0,"fp":0, "lr":801, "sp":0}
    #print Reg_File
    #print PSR
+   if test == "mem":
+      energy = random.randint(5*1048, 20*1048)
+   elif test == "mult":
+      energy = 10*1048
+   
    print ("************Start*******************")
    print ("Energy Available :")
    print (energy)
@@ -328,10 +332,22 @@ if __name__ == "__main__":
 	ins_count=0
 	mem_init("input.txt")
 	proc = int (sys.argv[1])
+	mult= sys.argv[2]
+	test= sys.argv[3]
 	
-	energy,program_counter,Reg_File, PSR, data_memory=init()
+	if mult== "original":
+	   var= 8
+	elif mult == "subword":
+	   var= 4
+	elif mult == "appx":
+	   var= 2
 	
-	f3=open("wrap.txt","a+")
+	energy,program_counter,Reg_File, PSR, data_memory=init(test)
+	
+	if test == "mem":
+	   f3=open("wrap.txt","a+")
+	elif test == "mult":
+	   f3=open("mult.txt","a+")
 	
 	if proc == 0:
 	   f3.write(str(energy))
@@ -350,7 +366,7 @@ if __name__ == "__main__":
 	   	   exit
 	   	ops=ID_stage(IR)
 	   	if ops[0]== "mul":
-	   	   energy -= 12
+	   	   energy -= var*3
 	   	else :
 	   	   energy -= 3
 	   	if energy < 0:
@@ -379,7 +395,7 @@ if __name__ == "__main__":
 	         exit
 	      ops=ID_stage(IR)
 	      if ops[0]== "mul":
-	         energy -= 6
+	         energy -= var*2
 	      else :
 	         energy -= 2
 	      if energy < 0:
