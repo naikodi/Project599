@@ -2,14 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import os
+import time
 
 # data to plot
 n = random.randint(4,10)
+exe_time1 =[]
+exe_time2 =[]
 
 os.system('rm wrap.txt')
 
 for i in range  (n):
-   os.system('python Pipeline_3_stage.py')
+   start=time.time()
+   os.system('python Pipeline_3_stage.py 0')
+   end=time.time()
+   exe_time1.append(int(end-start))
+   
+   start=time.time()
+   os.system('python Pipeline_3_stage.py 1') 
+   end=time.time()
+   exe_time2.append(int(end-start))
 
 data=[]
 energy=[]
@@ -27,6 +38,8 @@ f1.close()
 energy.sort()
 op1.sort()
 op2.sort()
+exe_time1.sort()
+exe_time2.sort()
 
 #print (energy, op1, op2)
 
@@ -47,6 +60,31 @@ color='g',
 label='OP2')
 
 plt.ylabel('No. of Instructions Executed')
+plt.xlabel('Energy Available')
+plt.title('Instructions executed with limited energy')
+plt.xticks(index + bar_width, energy)
+plt.legend()
+
+plt.tight_layout()
+#plt.show()
+
+# create plot
+fig, ax = plt.subplots()
+index = np.arange(n)
+bar_width = 0.35
+opacity = 0.8
+
+rects1 = plt.bar(index, exe_time1, bar_width,
+alpha=opacity,
+color='y',
+label='Exec Time OP1')
+
+rects2 = plt.bar(index + bar_width, exe_time2, bar_width,
+alpha=opacity,
+color='r',
+label='Exec Time OP2')
+
+plt.ylabel('Execution Time (in seconds)')
 plt.xlabel('Energy Available')
 plt.title('Instructions executed with limited energy')
 plt.xticks(index + bar_width, energy)
