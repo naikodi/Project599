@@ -1,3 +1,7 @@
+import random
+import sys
+import copy
+
 def mem_init(filename):
 	f = open(filename,"r")
 
@@ -6,9 +10,9 @@ def mem_init(filename):
 	f.close()
 	
 def IF_stage(program_counter):
-	print program_counter,
+	#print program_counter,
 	IR= ins_memory[program_counter]
-	print IR
+	#print IR
 	return IR
 
 def ID_stage(IR):
@@ -28,8 +32,8 @@ def EX_stage(ops,program_counter):
 		op11 = str(op2).strip('{}').split(',')
 		for i in op11:
 			stack.append(Reg_File[i])
-		print "Stack: ",
-		print stack
+		#print "Stack: ",
+		#print stack
 
 	if(opcode == "pop"):
 		op2= ""
@@ -40,8 +44,8 @@ def EX_stage(ops,program_counter):
 		a= len(op11)
 		for i in range(a):
 			Reg_File[op11[a-i-1]]=stack.pop()
-		print "Stack: ",
-		print stack
+		#print "Stack: ",
+		#print stack
 
 	if(opcode == "lsl" or opcode == "asl"):
 		op3=ops[1][:-1]
@@ -52,7 +56,7 @@ def EX_stage(ops,program_counter):
 			#print op3, 
 			#print op1, 
 			#print op2
-			Reg_File[op3]= a << (int(op2[1])/4)
+			Reg_File[op3]= a << int(int(op2[1])/4)
 
 	if(opcode == "lsr"):
 		op3=ops[1][:-1]
@@ -63,7 +67,7 @@ def EX_stage(ops,program_counter):
 			#print op3, 
 			#print op1, 
 			#print op2
-			Reg_File[op3]= a >> (int(op2[1])/4)
+			Reg_File[op3]= a >> int(int(op2[1])/4)
 
 	if(opcode == "asr"):
 		op3=ops[1][:-1]
@@ -90,7 +94,7 @@ def EX_stage(ops,program_counter):
 	   #print op3
 	   for i in range (a,b+1):
 	      reg= 'r'+str(i)
-	      Reg_File[reg] = data_memory [Reg_File[op3]]
+	      Reg_File[reg] = data_memory [int(Reg_File[op3]/4)]
 	      c+= 1;
 
 	if(opcode == "stm"):
@@ -106,7 +110,7 @@ def EX_stage(ops,program_counter):
 	   #print op3
 	   for i in range (a,b+1):
 	      reg= 'r'+str(i)
-	      data_memory [Reg_File[op3]]= Reg_File[reg]
+	      data_memory [int(Reg_File[op3]/4)]= Reg_File[reg]
 	      c+= 1;
 
 	if(opcode== "add"):
@@ -162,7 +166,7 @@ def EX_stage(ops,program_counter):
 		   op2 = op22 [:-1]  # #-48] Remove the last bracket
 		   #print op2,
 		#print op3
-		Reg_File[op3] = data_memory [Reg_File[op1] + (int(op2)/4)] #Check after data mem initialization
+		Reg_File[op3] = data_memory [int((Reg_File[op1] + int(op2))/4)] #Check after data mem initialization
 
 	if(opcode== "sdr"):
 		op3 = ops[1][:-1]
@@ -174,7 +178,7 @@ def EX_stage(ops,program_counter):
 		#print op1,
 		#print op2,
 		#print op3
-		data_memory[Reg_File[op1] + (int(op2)/4)] = Reg_File[op3]
+		data_memory[int((Reg_File[op1] + int(op2))/4)] = Reg_File[op3]
 
 		
 	if(opcode== "mov"):
@@ -206,7 +210,7 @@ def EX_stage(ops,program_counter):
 		#print op3, 
 		#print op1, 
 		#print op2
-		Reg_File[op3]=Reg_File[op1] | (Reg_File[op2] >> (int(opx)/4))
+		Reg_File[op3]=Reg_File[op1] | (Reg_File[op2] >> int(int(opx)/4))
 
 	if(opcode== "eor"):
 		op3=ops[1][:-1]
@@ -280,43 +284,120 @@ def EX_stage(ops,program_counter):
 
 
 if __name__ == "__main__":
+	
 	ins_memory=[]
 	data_memory= []
 	for i in range (2**16):
 	   data_memory.append(0)
 	stack = []
 	PSR = {"C":0,"N":0,"V":0,"Z":0}
-	Reg_File={"r0":0,"r1":0,"r2":0,"r3":0,"r4":0,"r5":0,"r6":0,"r7":0,"r8":0,"r9":0,"r10":0,"fp":0, "lr":0, "sp":0}
+	Reg_File={"r0":0,"r1":0,"r2":0,"r3":0,"r4":0,"r5":0,"r6":0,"r7":0,"r8":0,"r9":0,"r10":0,"fp":0, "lr":801, "sp":0}
 	#print Reg_File
 	#print PSR
 	mem_init("input.txt")
 	#print ins_memory
-	program_counter = 801
+	program_counter = 869
 	ins_count=0
-	energy = 12334
-	while(energy !=0 ):
+	energy = random.randint(4*1048, 8*1048)
+	ener= copy.deepcopy(energy)
+	print (energy)
+	f1=open("op1.txt","w+")
+	while(energy >0 ):
+		#print energy
+		energy -= 3
+		if energy < 0:
+		   exit
 		IR=IF_stage(program_counter)
 		program_counter= program_counter+1
 		#print program_counter
+		energy -= 3
+		if energy < 0:
+		   exit
 		ops=ID_stage(IR)
+		if ops[0]== "mul":
+		   energy -= 12
+		else :
+		   energy -= 3
+		if energy < 0:
+		   exit
 		program_counter=EX_stage(ops,program_counter)
 		ins_count+=1
-		energy-=1
-
-print "-------------------------------------------------------------"
-print "Execution Complete"
-print "-------------------------------------------------------------"
-print "Current PC:"
-print program_counter
-#print "-------------------------------------------------------------"
-#print "Memory:"
-#print data_memory
-print "-------------------------------------------------------------"
-print "Programme Status Register:"
-print PSR
-print "-------------------------------------------------------------"
-print "Registers:"
-print Reg_File
-print "-------------------------------------------------------------"
-print "Instruction Count:"
-print ins_count
+		f1.write(IR)
+		energy -= 2
+	f1.close()
+	f3=open("wrap.txt","a+")
+	f3.write(str(ener))
+	f3.write(",")
+	print ("-------------------------------------------------------------")
+	print ("Execution Complete")
+	print ("-------------------------------------------------------------")
+	print ("Current PC:")
+	print (program_counter)
+	#print "-------------------------------------------------------------"
+	#print "Memory:"
+	#print data_memory
+	print ("-------------------------------------------------------------")
+	print ("Programme Status Register:")
+	print (PSR)
+	print ("-------------------------------------------------------------")
+	print ("Registers:")
+	print (Reg_File)
+	print ("-------------------------------------------------------------")
+	print ("Instruction Count:")
+	print (ins_count)
+	f3.write(str(ins_count))
+	f3.write(",")
+	
+	for i in range (2**16):
+	   data_memory.append(0)
+	PSR = {"C":0,"N":0,"V":0,"Z":0}
+	Reg_File={"r0":0,"r1":0,"r2":0,"r3":0,"r4":0,"r5":0,"r6":0,"r7":0,"r8":0,"r9":0,"r10":0,"fp":0, "lr":801, "sp":0}
+	#print Reg_File
+	#print PSR
+	program_counter = 869
+	ins_count=0
+	
+	f2=open("op2.txt","w+")
+	while(ener >0 ):
+	   #print ener
+	   ener -= 2
+	   if ener < 0:
+	      exit
+	   IR=IF_stage(program_counter)
+	   program_counter= program_counter+1
+	   #print program_counter
+	   ener -= 2
+	   if ener < 0:
+	      exit
+	   ops=ID_stage(IR)
+	   if ops[0]== "mul":
+	      ener -= 6
+	   else :
+	      ener -= 2
+	   if ener < 0:
+	      exit
+	   program_counter=EX_stage(ops,program_counter)
+	   ins_count+=1
+	   f2.write(IR)
+	   ener -= 1
+	f2.close()
+	print ("-------------------------------------------------------------")
+	print ("Execution Complete")
+	print ("-------------------------------------------------------------")
+	print ("Current PC:")
+	print (program_counter)
+	#print "-------------------------------------------------------------"
+	#print "Memory:"
+	#print data_memory
+	print ("-------------------------------------------------------------")
+	print ("Programme Status Register:")
+	print (PSR)
+	print ("-------------------------------------------------------------")
+	print ("Registers:")
+	print (Reg_File)
+	print ("-------------------------------------------------------------")
+	print ("Instruction Count:")
+	print (ins_count)
+	f3.write(str(ins_count))
+	f3.write("\n")
+	f3.close()
