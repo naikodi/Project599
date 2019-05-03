@@ -5,8 +5,8 @@ import os
 import time
 
 # data to plot
-#n = random.randint(2,3)
-n=1
+n = random.randint(5,10)
+#n=1
 exe_time1 =[]
 exe_time2 =[]
 exe_time3 =[]
